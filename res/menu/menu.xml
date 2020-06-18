@@ -9,8 +9,8 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/settings"
-        android:title="Settings" />
+        android:id="@+id/clear"
+        android:title="Clear Favorites" />
     <item
         android:id="@+id/about"
         android:title="About" />

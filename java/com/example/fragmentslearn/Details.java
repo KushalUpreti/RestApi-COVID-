@@ -22,7 +22,7 @@ public class Details extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
-        Toast.makeText(Details.this, "Additional Information ", Toast.LENGTH_SHORT).show();
+
 
         countryName = findViewById(R.id.name);
         newConfirmed = findViewById(R.id.newConfirmed);

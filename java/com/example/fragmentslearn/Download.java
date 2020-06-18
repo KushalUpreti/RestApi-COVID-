@@ -24,6 +24,10 @@ public class Download extends AsyncTask<String, Void, String> {
         this.callback =  callback;
     }
 
+    void runTask(String s){
+
+    }
+
     @Override
     protected String doInBackground(String... strings) {
         HttpURLConnection connection = null;

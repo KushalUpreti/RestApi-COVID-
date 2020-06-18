@@ -1,5 +1,7 @@
 package com.example.fragmentslearn;
 
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +11,7 @@ import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -25,16 +28,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @NonNull
     @Override
     public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.relative_view,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.relative_view, parent, false);
         return new RecyclerViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: Begins");
-        if(mList != null || mList.size()!=0){
+        if (mList != null || mList.size() != 0) {
             Cases caseItem = mList.get(position);
-            holder.deathNum.setText(""+caseItem.getTotalDeaths());
+            holder.deathNum.setText("" + caseItem.getTotalDeaths());
             holder.countryName.setText(caseItem.getCountryName());
         }
     }
@@ -50,27 +53,27 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public Filter getFilter() {
-
         return exampleFilter;
     }
-//    To filter the recyclerview
+
+    //    To filter the recyclerview
     private Filter exampleFilter = new Filter() {
         @Override
         //Background Thread
         protected FilterResults performFiltering(CharSequence constraint) {
             ArrayList<Cases> filteredList = new ArrayList<>();
-            if(constraint==null || constraint.length()==0){
-                if(mListFull!=null || mListFull.size()>0){
+            if (constraint == null || constraint.length() == 0) {
+                if (mListFull != null || mListFull.size() > 0) {
                     filteredList.addAll(mListFull);
                 }
 
-            }else {
+            } else {
                 String filterPattern = constraint.toString().toLowerCase().trim();
-                if(mListFull!=null && mListFull.size()>0){
-                    for(Cases item : mListFull){
+                if (mListFull != null && mListFull.size() > 0) {
+                    for (Cases item : mListFull) {
 //                        the sequence to search for
 //                        *@return true if this string contains {@code s},
-                        if(item.getCountryName().toLowerCase().contains(filterPattern)){
+                        if (item.getCountryName().toLowerCase().contains(filterPattern)) {
                             filteredList.add(item);
                         }
                     }
@@ -83,20 +86,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            if(mList!=null){
+            if (mList != null && results!=null) {
 //              Removes all of the elements from this list.  The list will
 //              *be empty after this call returns.
                 mList.clear();
-                mList.addAll((ArrayList<Cases>)results.values);
+                mList.addAll((ArrayList<Cases>) results.values);
                 notifyDataSetChanged();
             }
         }
     };
 
-    public class RecyclerViewHolder extends RecyclerView.ViewHolder{
+    public class RecyclerViewHolder extends RecyclerView.ViewHolder {
         TextView countryName;
         TextView deathNum;
         TextView deathtoll;
+
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             countryName = itemView.findViewById(R.id.country_name);
@@ -105,7 +109,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
     }
 
-    public void loadNewDataSet(ArrayList<Cases> list){
+    public void loadNewDataSet(ArrayList<Cases> list) {
         this.mList = list;
         mListFull = new ArrayList<>(list);
         notifyDataSetChanged();
