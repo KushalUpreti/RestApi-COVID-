@@ -22,13 +22,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements DataParser.OnDataAvailable, RecyclerViewTouchDetector.OnRecyclerClickListner {
     private static final String TAG = "MainActivity";
@@ -52,10 +59,15 @@ public class MainActivity extends AppCompatActivity implements DataParser.OnData
 
         recyclerViewAdapter = new RecyclerViewAdapter(new ArrayList<Cases>());
         recyclerView.setAdapter(recyclerViewAdapter);
-        DataParser download = new DataParser(this);
-        download.execute("https://api.covid19api.com/summary");
+
+//        DataParser download = new DataParser(this);
+//        download.execute("https://api.covid19api.com/summary");
+        BackgroundWork.context = MainActivity.this;
+        BackgroundWork.context1 = MainActivity.this;
+        periodic();
 
         countries = new ArrayList<>();
+
     }
 
     @Override
@@ -137,21 +149,6 @@ public class MainActivity extends AppCompatActivity implements DataParser.OnData
         }
     }
 
-    //118
-    private void checkIncrement(String name, int deathcount) {
-
-        SharedPreferences sp = getSharedPreferences("NepalData", MODE_PRIVATE);
-        int currentCount = sp.getInt(name, 0);
-        Log.d(TAG, "checkIncrement: "+ name +" " +deathcount+" " + currentCount);
-        if (deathcount > currentCount) {
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putInt(name, deathcount);
-            editor.apply();
-            Toast.makeText(this,name+ " toll increased by"+ (deathcount-currentCount),
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
     private void saveData(){
         SharedPreferences countryname = getSharedPreferences("CountryData", MODE_PRIVATE);
         Map<String,?> map = countryname.getAll();
@@ -172,6 +169,17 @@ public class MainActivity extends AppCompatActivity implements DataParser.OnData
         }
     }
 
+    private void checkIncrement(String name, int deathcount) {
+        SharedPreferences sp = getSharedPreferences("NepalData", MODE_PRIVATE);
+        int currentCount = sp.getInt(name, 0);
+        if (deathcount > currentCount) {
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putInt(name, deathcount);
+            editor.apply();
+            buildNotifications(name,(deathcount-currentCount));
+        }
+    }
+
     private void createNotificationChannel(){
         if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.O){
             CharSequence name = getString(R.string.channel_name);
@@ -189,14 +197,23 @@ public class MainActivity extends AppCompatActivity implements DataParser.OnData
 
     private void buildNotifications(String countryName, int deathIncrement){
         CharSequence title = "Death toll increased in " + countryName;
-        CharSequence body = "Additional "+deathIncrement+ " deaths in "+ countryName+ "due to COVID-19 \uD83D\uDE22";
+        CharSequence body = "Additional "+deathIncrement+ " deaths in "+ countryName+ " due to COVID-19 \uD83D\uDE22";
         NotificationCompat.Builder alertNotify = new NotificationCompat.Builder(this,getString(R.string.channel1_id))
                 .setContentTitle(title)
                 .setContentText(body)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setSmallIcon(R.drawable.virus)
                 .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                 .setAutoCancel(true); //removes notification when user clicks on it
 
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(notifId,alertNotify.build());
+    }
 
+    private void periodic(){
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder((BackgroundWork.class),
+                15, TimeUnit.MINUTES).build();
+        WorkManager.getInstance(this).enqueue(periodicWorkRequest);
+        Log.d(TAG, "periodic: Working");
     }
 }
